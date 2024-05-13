@@ -22,5 +22,5 @@ jobs:
       - name: Run checks
         run: |
           cd linux
-	  make defconfig
-	  make -j 8
+          make defconfig
+          make -j 8
