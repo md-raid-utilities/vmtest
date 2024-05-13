@@ -4,7 +4,7 @@ on:
   pull_request
 
 job:
-  build-kernel
+  build-kernel:
   runs-on: 'ubuntu-latest'
     - name: Configure git
       run: |
