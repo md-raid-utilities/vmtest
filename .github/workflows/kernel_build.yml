@@ -3,7 +3,7 @@ name: md-ci
 on:
   pull_request
 
-job:
+jobs:
   build-kernel:
   runs-on: 'ubuntu-latest'
     - name: Configure git
