@@ -12,8 +12,8 @@ jobs:
           git config --global --add safe.directory '*'
       - name: Checkout git
         run: |
-          mkdir -p /build/my-linux
-          cd /build/my-linux
+          mkdir -p linux
+          cd linux
           git init
           git remote add origin https://github.com/${{ github.repository }}
           git fetch origin --depth=5 ${{ github.event.pull_request.head.sha }}
@@ -21,4 +21,6 @@ jobs:
           git log -1
       - name: Run checks
         run: |
-          cd /build/my-linux
+          cd linux
+	  make defconfig
+	  make -j 8
