@@ -12,6 +12,7 @@ jobs:
           git config --global --add safe.directory '*'
       - name: Checkout git
         run: |
+          sudo apt-get install -y libelf-dev
           mkdir -p linux
           cd linux
           git init
