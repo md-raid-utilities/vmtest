@@ -109,6 +109,7 @@ jobs:
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
           for i in $(seq 1 $MAX_VAG_RETRIES); do
+            vagrant ssh -c "sudo grubby --remove-kernel=0" 
             vagrant ssh -c "cd host/linux && sudo make modules_install -j20 && \
               sudo make install -j20"
             echo "FYI vagrant make command finished with exit code: $?" 
@@ -120,8 +121,7 @@ jobs:
           done
           # our VM clean image only has one index (0) so 1 is always correct
           for i in $(seq 1 $MAX_VAG_RETRIES); do
-            vagrant ssh -c "sudo grubby --set-default-index=1 && \
-              sudo grubby --info ALL && exit"
+            vagrant ssh -c "sudo grubby --info ALL && exit"
             echo "FYI vagrant grubby command finished with exit code: $?"   
             if [ $? -eq 0 ]; then
               break
