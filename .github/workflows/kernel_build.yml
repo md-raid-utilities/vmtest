@@ -42,6 +42,7 @@ jobs:
           done
           for i in $(seq 1 $MAX_VAG_RETRIES); do
             vagrant ssh -c "echo 'Fresh VM, hello world!' && date && uname -r && gcc --version"
+            vagrant ssh -c "grubby --info ALL"
             echo "FYI vagrant fresh command finished with exit code: $?" 
             if [ $? -eq 0 ]; then
               break
@@ -159,6 +160,7 @@ jobs:
           sleep 2
           for i in $(seq 1 $MAX_VAG_RETRIES); do
             vagrant ssh -c "echo 'Reboot done, hello world!' && uname -r"
+            vagrant ssh -c "grubby --info ALL"
             echo "FYI vagrant reboot done command finished with exit code: $?" 
             if [ $? -eq 0 ]; then
               break
