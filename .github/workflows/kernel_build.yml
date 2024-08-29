@@ -1,27 +1,181 @@
-name: md-ci
+name: mdci-per-patch
+# tested with v1 vagrant snapshot.
 
 on:
   pull_request:
 
+env:
+    MAX_VAG_RETRIES: "3"
+    VAG_RETRY_DELAY: "5"
+    
 jobs:
-  build-kernel:
-    runs-on: ubuntu-latest
+  per-patch-testing:
+    runs-on: self-hosted
     steps:
-      - name: Configure git
+      - name: VM startup from snapshot
         run: |
-          git config --global --add safe.directory '*'
-      - name: Checkout git
+          echo "Current working directory: ${{ github.workspace }}"
+          cd ..
+          rm -rf linux
+          echo "***************************"
+          echo "Restoring clean VM image..."
+          echo "***************************"
+          echo "Let's check the current user and which runner is execiting:"
+          whoami
+          ls run*
+          vagrant snapshot restore clean_vm_v1
+          echo "FYI vagrant restore command finished with exit code: $?"
+          sleep 2
+          # temp workaround for some strange behavior under heavy load
+          vagrant status
+          vagrant up
+          sleep 2
+          for i in $(seq 1 $MAX_VAG_RETRIES); do
+            vagrant ssh -c "sudo sudo timedatectl set-timezone UTC && \
+              sudo systemctl restart chronyd && sudo chronyc -a makestep && sleep 1"
+            echo "FYI vagrant time command finished with exit code: $?" 
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            echo "Vagrant SSH command UTC set. Retrying in $RETRY_DELAY seconds..."
+            sleep $VAG_RETRY_DELAY
+          done
+          for i in $(seq 1 $MAX_VAG_RETRIES); do
+            vagrant ssh -c "echo 'Fresh VM, hello world!' && date && uname -r && gcc --version"
+            echo "FYI vagrant fresh command finished with exit code: $?" 
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            echo "Vagrant SSH command date. Retrying in $RETRY_DELAY seconds..."
+            sleep $VAG_RETRY_DELAY
+          done
+        continue-on-error: true
+      - name: Checkout kernel source
         run: |
-          sudo apt-get install -y libelf-dev
+          cd ..
+          echo "***********************"
+          echo "Preparing Linux repo..."
+          echo "***********************"
+          sudo timedatectl set-timezone UTC
+          sudo systemctl restart chronyd && sudo chronyc -a makestep && sleep 1
           mkdir -p linux
           cd linux
           git init
+          git config --global --add safe.directory '*'
           git remote add origin https://github.com/${{ github.repository }}
           git fetch origin --depth=5 ${{ github.event.pull_request.head.sha }}
           git reset --hard ${{ github.event.pull_request.head.sha }}
-          git log -1
+          echo "Ready to configure..."
+      - name: Configure kernel
+        run: |
+          cd ..
+          cp config.sh linux
+          echo "********************************"
+          echo "Prepare minimal kernel config..."
+          echo "********************************"
+          # temp workaround for some strange behavior under heavy load
+          vagrant status
+          vagrant up
+          echo "FYI vagrant up command finished with exit code: $?"
+          sleep 2
+          for i in $(seq 1 $MAX_VAG_RETRIES); do
+            vagrant ssh -c "cd host/linux && ./config.sh"
+            echo "FYI vagrant config command finished with exit code: $?" 
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            echo "Vagrant SSH command config.sh. Retrying in $RETRY_DELAY seconds..."
+            sleep $VAG_RETRY_DELAY
+          done
+        continue-on-error: true
       - name: Build kernel
         run: |
-          cd linux
-          make defconfig
-          make -j 8
+          cd ../linux
+          echo "******************************"
+          echo "Compile Linux on bare metal..."
+          echo "******************************"
+          make bzImage -j20
+          make modules -j20
+      - name: Install kernel
+        run: |
+          cd ..
+          echo "***********************"
+          echo "Install kernel in VM..."
+          echo "***********************"
+          # temp workaround for some strange behavior under heavy load
+          vagrant status
+          vagrant up
+          echo "FYI vagrant up command finished with exit code: $?"
+          sleep 2
+          for i in $(seq 1 $MAX_VAG_RETRIES); do
+            vagrant ssh -c "cd host/linux && sudo make modules_install -j20 && \
+              sudo make install -j20"
+            echo "FYI vagrant make command finished with exit code: $?" 
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            echo "Vagrant SSH command install. Retrying in $RETRY_DELAY seconds..."
+            sleep $VAG_RETRY_DELAY
+          done
+          # our VM clean image only has one index (0) so 1 is always correct
+          for i in $(seq 1 $MAX_VAG_RETRIES); do
+            vagrant ssh -c "sudo grubby --set-default-index=1 && \
+              sudo grubby --info ALL && exit"
+            echo "FYI vagrant grubby command finished with exit code: $?"   
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            echo "Vagrant SSH command grubby. Retrying in $RETRY_DELAY seconds..."
+            sleep $VAG_RETRY_DELAY
+          done
+        continue-on-error: true
+      - name: Reboot VM
+        run: |
+          cd ..
+          echo "***************"
+          echo "Rebooting VM..."
+          echo "***************"
+          vagrant status
+          vagrant halt
+          echo "FYI vagrant halt command finished with exit code: $?"
+          sleep 2
+          vagrant status
+          sleep 2
+          vagrant up
+          echo "FYI vagrant up command finished with exit code: $?"
+          sleep 2
+          vagrant status
+        continue-on-error: true
+      - name: VM version check
+        run: |
+          cd ..
+          echo "*********************************"
+          echo 'Reboot done, check kernel version'
+          echo "*********************************"
+          # temp workaround for some strange behavior under heavy load
+          vagrant status
+          vagrant up
+          echo "FYI vagrant up command finished with exit code: $?"
+          sleep 2
+          for i in $(seq 1 $MAX_VAG_RETRIES); do
+            vagrant ssh -c "echo 'Reboot done, hello world!' && uname -r"
+            echo "FYI vagrant reboot done command finished with exit code: $?" 
+            if [ $? -eq 0 ]; then
+              break
+            fi
+            echo "Vagrant SSH reboot/uname failed. Retrying in $RETRY_DELAY seconds..."
+            sleep $VAG_RETRY_DELAY
+          done
+        continue-on-error: true
+      - name: Execute tests
+        run: |
+          cd ..
+          echo "Under construction..."
+      - name: All done, cleanup
+        run: |          
+          cd ..
+          echo "Cleaning up..."
+          # TODO: add testing cleanup
+          vagrant halt
+          echo "FYI vagrant halt command finished with exit code: $?"
+          rm -rf linux
