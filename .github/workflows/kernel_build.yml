@@ -64,7 +64,9 @@ jobs:
           git init
           git config --global --add safe.directory '*'
           git remote add origin https://github.com/${{ github.repository }}
+          echo "Fetching code..."
           git fetch origin --depth=5 ${{ github.event.pull_request.head.sha }}
+          echo "Resetting head..."
           git reset --hard ${{ github.event.pull_request.head.sha }}
           echo "Ready to configure..."
       - name: Configure kernel
@@ -74,7 +76,6 @@ jobs:
           echo "********************************"
           echo "Prepare minimal kernel config..."
           echo "********************************"
-          # temp workaround for some strange behavior under heavy load
           vagrant status
           vagrant up
           echo "FYI vagrant up command finished with exit code: $?"
@@ -103,12 +104,12 @@ jobs:
           echo "***********************"
           echo "Install kernel in VM..."
           echo "***********************"
-          # temp workaround for some strange behavior under heavy load
           vagrant status
           vagrant up
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
           for i in $(seq 1 $MAX_VAG_RETRIES); do
+            # remove old kernel index 0 so new build will always be used
             vagrant ssh -c "sudo grubby --remove-kernel=0" 
             vagrant ssh -c "cd host/linux && sudo make modules_install -j20 && \
               sudo make install -j20"
@@ -119,7 +120,6 @@ jobs:
             echo "Vagrant SSH command install. Retrying in $RETRY_DELAY seconds..."
             sleep $VAG_RETRY_DELAY
           done
-          # our VM clean image only has one index (0) so 1 is always correct
           for i in $(seq 1 $MAX_VAG_RETRIES); do
             vagrant ssh -c "sudo grubby --info ALL && exit"
             echo "FYI vagrant grubby command finished with exit code: $?"   
@@ -153,7 +153,6 @@ jobs:
           echo "*********************************"
           echo 'Reboot done, check kernel version'
           echo "*********************************"
-          # temp workaround for some strange behavior under heavy load
           vagrant status
           vagrant up
           echo "FYI vagrant up command finished with exit code: $?"
