@@ -67,7 +67,7 @@ jobs:
           git config --global --add safe.directory '*'
           git remote add origin https://github.com/${{ github.repository }}
           echo "Fetching code..."
-          git fetch origin --depth=5 ${{ github.event.pull_request.head.sha }}
+          git fetch origin --depth=1 ${{ github.event.pull_request.head.sha }}
           echo "Resetting head..."
           git reset --hard ${{ github.event.pull_request.head.sha }}
           echo "Ready to configure..."
