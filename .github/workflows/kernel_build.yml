@@ -10,6 +10,7 @@ env:
     
 jobs:
   per-patch-testing:
+    if: ${{ github.repository == 'md-raid-utilities/md-ci-linux' }}
     runs-on: self-hosted
     steps:
       - name: VM startup from snapshot
