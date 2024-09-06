@@ -14,6 +14,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: VM startup from snapshot
+        id: kver1
         run: |
           echo "Current working directory: ${{ github.workspace }}"
           cd ..
@@ -36,25 +37,7 @@ jobs:
           vagrant ssh -c "echo 'Fresh VM, hello world!' && date && uname -r && \
             gcc --version && sudo grubby --info ALL"
           echo "FYI vagrant fresh command finished with exit code: $?" 
-          echo "KVER1=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
-      #- name: Checkout kernel source
-      #  run: |
-      #    cd ..
-      #    echo "***********************"
-      #    echo "Preparing Linux repo..."
-      #    echo "***********************"
-      #    sudo timedatectl set-timezone UTC
-      #    sudo systemctl restart chronyd && sudo chronyc -a makestep && sleep 1
-      #    mkdir -p linux
-      #    cd linux
-      #    git init
-      #    git config --global --add safe.directory '*'
-      #    git remote add origin https://github.com/${{ github.repository }}
-      #    echo "Fetching code..."
-      #    git fetch origin --depth=1 ${{ github.event.pull_request.head.sha }}
-      #    echo "Resetting head..."
-      #    git reset --hard ${{ github.event.pull_request.head.sha }}
-      #    echo "Ready to configure..."
+          echo "kver=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -112,6 +95,7 @@ jobs:
             sudo make install -j20 && sudo grubby --info ALL && exit"
           echo "FYI vagrant make command finished with exit code: $?" 
       - name: Reboot VM
+        id: kver2
         run: |
           cd ..
           echo "***************"
@@ -127,23 +111,19 @@ jobs:
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
           vagrant status
-          echo "KVER2=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
+          echo "kver=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
       - name: VM version check
         run: |
           echo "*********************************"
           echo 'Reboot done, check kernel version'
           echo "*********************************"
-          echo "before---> ${{ env.KVER1 }}"
-          echo "after----> ${{ env.KVER2 }}"
-          #
-          # TODO fix this
-          #
-          #if [[ "${{ env.KVER1 }}" != "${{ env.KVER2 }}" ]]; then
-          #  echo "Version check passed!"
-          #else
-          #  echo "Kernel install failed"
-          #  exit 1
-          #fi
+          echo "before---> ${{steps.kver1.outputs.kver}}"
+          echo "after----> ${{steps.kver2.outputs.kver}}"
+          if [[ "${{steps.kver1.outputs.kver}}" != "${{steps.kver2.outputs.kver}}" ]]; then
+            echo "Version check passed!"
+          else
+            echo "Kernel install failed"
+          fi
           vagrant status
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
