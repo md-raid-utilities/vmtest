@@ -37,7 +37,7 @@ jobs:
           vagrant ssh -c "echo 'Fresh VM, hello world!' && date && uname -r && \
             gcc --version && sudo grubby --info ALL"
           echo "FYI vagrant fresh command finished with exit code: $?" 
-          echo "kver=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT
+          echo "kver=$(vagrant ssh -c 'uname -r')" >> $GITHUB_OUTPUT
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -111,7 +111,7 @@ jobs:
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
           vagrant status
-          echo "kver=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
+          echo "kver=$(vagrant ssh -c 'uname -r')" >> $GITHUB_OUTPUT
       - name: VM version check
         run: |
           echo "*********************************"
