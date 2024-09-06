@@ -85,7 +85,7 @@ jobs:
           vagrant up
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
-          vagrant ssh -c "cd ${{ env.JOB_OUT }} && ./config.sh"
+          vagrant ssh -c "cd ${{ env.REPO_DIR }} && ./config.sh"
           echo "FYI vagrant config command finished with exit code: $?" 
       - name: Build kernel
         run: |
@@ -108,7 +108,7 @@ jobs:
           # remove old kernel index 0 so new build will always be used
           vagrant ssh -c "sudo grubby --remove-kernel=0" 
           echo "FYI vagrant grubby command finished with exit code: $?" 
-          vagrant ssh -c "cd ${{ env.JOB_OUT }} && sudo make modules_install -j20 && \
+          vagrant ssh -c "cd ${{ env.REPO_DIR }} && sudo make modules_install -j20 && \
             sudo make install -j20 && sudo grubby --info ALL && exit"
           echo "FYI vagrant make command finished with exit code: $?" 
       - name: Reboot VM
