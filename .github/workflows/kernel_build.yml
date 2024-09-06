@@ -86,7 +86,7 @@ jobs:
           vagrant ssh -c "sudo grubby --remove-kernel=0" 
           echo "FYI vagrant grubby command finished with exit code: $?" 
           vagrant ssh -c "cd host/linux && sudo make modules_install -j20 && \
-            sudo make install -j20 && udo grubby --info ALL && exit"
+            sudo make install -j20 && sudo grubby --info ALL && exit"
           echo "FYI vagrant make command finished with exit code: $?" 
       - name: Reboot VM
         run: |
