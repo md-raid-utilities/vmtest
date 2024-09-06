@@ -3,10 +3,6 @@ name: mdci-per-patch
 
 on:
   pull_request:
-
-env:
-    MAX_VAG_RETRIES: "3"
-    VAG_RETRY_DELAY: "5"
     
 jobs:
   per-patch-testing:
@@ -14,7 +10,6 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: VM startup from snapshot
-        id: kver1
         run: |
           echo "Current working directory: ${{ github.workspace }}"
           cd ..
@@ -28,32 +23,16 @@ jobs:
           vagrant snapshot restore clean_vm_v1
           echo "FYI vagrant restore command finished with exit code: $?"
           sleep 2
-          # temp workaround for some strange behavior under heavy load
           vagrant status
           vagrant up
           sleep 2
-          for i in $(seq 1 $MAX_VAG_RETRIES); do
-            vagrant ssh -c "sudo timedatectl set-timezone UTC && \
-              sudo systemctl restart chronyd && sudo chronyc -a makestep && sleep 1"
-            echo "FYI vagrant time command finished with exit code: $?" 
-            if [ $? -eq 0 ]; then
-              break
-            fi
-            echo "Vagrant SSH command UTC set. Retrying in $RETRY_DELAY seconds..."
-            sleep $VAG_RETRY_DELAY
-          done
-          for i in $(seq 1 $MAX_VAG_RETRIES); do
-            vagrant ssh -c "echo 'Fresh VM, hello world!' && date && uname -r && gcc --version"
-            vagrant ssh -c "sudo grubby --info ALL"
-            echo "FYI vagrant fresh command finished with exit code: $?" 
-            if [ $? -eq 0 ]; then
-              break
-            fi
-            echo "Vagrant SSH command date. Retrying in $RETRY_DELAY seconds..."
-            sleep $VAG_RETRY_DELAY
-          done
-          echo "kver=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
-        continue-on-error: true
+          vagrant ssh -c "sudo timedatectl set-timezone UTC && \
+            sudo systemctl restart chronyd && sudo chronyc -a makestep && sleep 1"
+          echo "FYI vagrant time command finished with exit code: $?" 
+          vagrant ssh -c "echo 'Fresh VM, hello world!' && date && uname -r && \
+            gcc --version && sudo grubby --info ALL"
+          echo "FYI vagrant fresh command finished with exit code: $?" 
+          echo "KVER1=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
       - name: Checkout kernel source
         run: |
           cd ..
@@ -83,16 +62,8 @@ jobs:
           vagrant up
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
-          for i in $(seq 1 $MAX_VAG_RETRIES); do
-            vagrant ssh -c "cd host/linux && ./config.sh"
-            echo "FYI vagrant config command finished with exit code: $?" 
-            if [ $? -eq 0 ]; then
-              break
-            fi
-            echo "Vagrant SSH command config.sh. Retrying in $RETRY_DELAY seconds..."
-            sleep $VAG_RETRY_DELAY
-          done
-        continue-on-error: true
+          vagrant ssh -c "cd host/linux && ./config.sh"
+          echo "FYI vagrant config command finished with exit code: $?" 
       - name: Build kernel
         run: |
           cd ../linux
@@ -111,30 +82,13 @@ jobs:
           vagrant up
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
-          for i in $(seq 1 $MAX_VAG_RETRIES); do
-            # remove old kernel index 0 so new build will always be used
-            vagrant ssh -c "sudo grubby --remove-kernel=0" 
-            vagrant ssh -c "cd host/linux && sudo make modules_install -j20 && \
-              sudo make install -j20"
-            echo "FYI vagrant make command finished with exit code: $?" 
-            if [ $? -eq 0 ]; then
-              break
-            fi
-            echo "Vagrant SSH command install. Retrying in $RETRY_DELAY seconds..."
-            sleep $VAG_RETRY_DELAY
-          done
-          for i in $(seq 1 $MAX_VAG_RETRIES); do
-            vagrant ssh -c "sudo grubby --info ALL && exit"
-            echo "FYI vagrant grubby command finished with exit code: $?"   
-            if [ $? -eq 0 ]; then
-              break
-            fi
-            echo "Vagrant SSH command grubby. Retrying in $RETRY_DELAY seconds..."
-            sleep $VAG_RETRY_DELAY
-          done
-        continue-on-error: true
+          # remove old kernel index 0 so new build will always be used
+          vagrant ssh -c "sudo grubby --remove-kernel=0" 
+          echo "FYI vagrant grubby command finished with exit code: $?" 
+          vagrant ssh -c "cd host/linux && sudo make modules_install -j20 && \
+            sudo make install -j20 && udo grubby --info ALL && exit"
+          echo "FYI vagrant make command finished with exit code: $?" 
       - name: Reboot VM
-        id: kver2
         run: |
           cd ..
           echo "***************"
@@ -150,16 +104,15 @@ jobs:
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
           vagrant status
-          echo "kver=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
-        continue-on-error: true
+          echo "KVER2=$(vagrant ssh -c 'uname -r')" >> "$GITHUB_OUTPUT"
       - name: VM version check
         run: |
           echo "*********************************"
           echo 'Reboot done, check kernel version'
           echo "*********************************"
-          echo "before---> ${{steps.kver1.outputs.kver}}"
-          echo "after----> ${{steps.kver2.outputs.kver}}"
-          if [[ "${{steps.kver1.outputs.kver}}" != "${{steps.kver2.outputs.kver}}" ]]; then
+          echo "before---> ${{ env.KVER1 }}"
+          echo "after----> ${{ env.KVER2 }}"
+          if [[ "${{ env.KVER1 }}" != "${{ env.KVER2 }}" ]]; then
             echo "Version check passed!"
           else
             echo "Kernel install failed"
@@ -170,7 +123,6 @@ jobs:
           sleep 2
           vagrant ssh -c "echo 'Reboot done, hello world!' && uname -r"
           echo "FYI vagrant reboot done command finished with exit code: $?" 
-        continue-on-error: false
       - name: Execute tests
         run: |
           cd ..
