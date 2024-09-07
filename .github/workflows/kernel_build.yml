@@ -44,6 +44,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Get user's e-mail
         run: |
+          git reset --hard ${{ github.event.pull_request.head.sha }}
           # echo "USER_EMAIL=$(git log -n 1 --pretty=format:%ae)" >> $GITHUB_ENV
           # temp override the aboe during testing
           echo "USER_EMAIL=paul.e.luse@intel.com" >> $GITHUB_ENV
