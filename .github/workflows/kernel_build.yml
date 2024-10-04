@@ -43,7 +43,7 @@ jobs:
           ref: ${{ github.head_ref }}
       - name: Run checkpatch review
         uses: webispy/checkpatch-action@v9
-      - name: Get user's e-mail
+      - name: Get some PR info
         run: |
           # echo "USER_EMAIL=$(git log -n 1 --pretty=format:%ae)" >> $GITHUB_ENV
           # temp override the aboe during testing
