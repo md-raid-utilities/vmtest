@@ -41,6 +41,8 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
+      - name: Run checkpatch review
+        uses: webispy/checkpatch-action@v9
       - name: Get user's e-mail
         run: |
           # echo "USER_EMAIL=$(git log -n 1 --pretty=format:%ae)" >> $GITHUB_ENV
