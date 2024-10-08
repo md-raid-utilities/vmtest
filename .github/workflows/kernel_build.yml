@@ -62,7 +62,7 @@ jobs:
           echo "SUBJECT=Github Actions job FAILURE for $(git log -n 1 --pretty=format:%ae)" >> $GITHUB_ENV
       - name: Configure kernel
         run: |
-          cp ../config.sh .
+          cp .github/config.sh .
           cd ..
           echo "********************************"
           echo "Prepare minimal kernel config..."
