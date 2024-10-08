@@ -41,6 +41,10 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.head_ref }}
+      - name: Configure checkpatch
+        run: |
+          cp .github/.checkpatch.conf .
+          cat .checkpatch.conf
       - name: Run checkpatch review
         uses: webispy/checkpatch-action@v9
       - name: Get some PR info
