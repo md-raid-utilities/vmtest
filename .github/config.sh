@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Copying base .config"
+echo "Copy base .config"
 cp /boot/config-`uname -r`* .config
 
 echo "Make localmodconfig"
