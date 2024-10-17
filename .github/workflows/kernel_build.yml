@@ -1,4 +1,5 @@
 name: mdci-per-patch
+# SPDX-License-Identifier: BSD-3-Clause
 # tested with v1 vagrant snapshot...
 
 on:
