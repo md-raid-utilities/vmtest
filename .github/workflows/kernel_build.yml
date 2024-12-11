@@ -48,7 +48,7 @@ jobs:
             cp .github/.checkpatch.conf .
             cat .checkpatch.conf
           else
-            echo "checkpatch.conf does not exist. Possibly an mdadm patch!"
+            echo "checkpatch.conf does not exist. Merge conflict or possibly an mdadm patch!"
             ls -al .github
             exit 1
           fi
