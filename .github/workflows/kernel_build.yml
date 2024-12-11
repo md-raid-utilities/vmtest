@@ -49,6 +49,7 @@ jobs:
             cat .checkpatch.conf
           else
             echo "checkpatch.conf does not exist. Possibly an mdadm patch!"
+            ls -al .github
             exit 1
           fi
       - name: Run checkpatch review
