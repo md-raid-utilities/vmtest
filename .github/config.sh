@@ -1,5 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: BSD-3-Clause
+#
 
 echo "Copy base .config"
 cp /boot/config-`uname -r`* .config
