@@ -25,14 +25,16 @@ jobs:
           echo "Let's check the current user and which runner is execiting:"
           whoami
           ls run*
-          vagrant snapshot restore clean_vm_v1
+          # clean_vm_v1 is Fedora39
+          #vagrant snapshot restore clean_vm_v1
+          vagrant snapshot restore clean_vm_v42
           echo "FYI vagrant restore command finished with exit code: $?"
           sleep 2
           vagrant status
           vagrant up
           sleep 2
           vagrant ssh -c "sudo timedatectl set-timezone UTC && \
-            sudo systemctl restart chronyd && sudo chronyc -a makestep && sleep 1"
+            sudo chronyc -a makestep && sudo systemctl restart chronyd  && sleep 1"
           echo "FYI vagrant time command finished with exit code: $?" 
           vagrant ssh -c "echo 'Fresh VM, hello world!' && date && uname -r && \
             gcc --version && sudo grubby --info ALL"
