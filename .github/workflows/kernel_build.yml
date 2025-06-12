@@ -72,7 +72,7 @@ jobs:
       - name: Configure kernel
         run: |
           cp .github/config.sh .
-          #cd ..
+          #cd .. replace after teset
           echo "********************************"
           echo "Prepare minimal kernel config..."
           echo "********************************"
