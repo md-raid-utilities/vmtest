@@ -85,6 +85,8 @@ jobs:
           echo "******************************"
           echo "Compile Linux on bare metal..."
           echo "******************************"
+          echo "Current working directory:"
+          pwd
           make bzImage -j20
           make modules -j20
       - name: Install kernel
