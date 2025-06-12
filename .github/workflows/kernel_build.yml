@@ -72,7 +72,7 @@ jobs:
       - name: Configure kernel
         run: |
           cp .github/config.sh .
-          cd ..
+          #cd ..
           echo "********************************"
           echo "Prepare minimal kernel config..."
           echo "********************************"
@@ -80,7 +80,8 @@ jobs:
           vagrant up
           echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
-          vagrant ssh -c "cd ${{ env.REPO_DIR }} && ./config.sh"
+          #vagrant ssh -c "cd ${{ env.REPO_DIR }} && ./config.sh"
+          ./config.sh
           echo "FYI vagrant config command finished with exit code: $?" 
       - name: Build kernel
         run: |
