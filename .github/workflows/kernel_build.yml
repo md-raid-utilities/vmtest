@@ -57,7 +57,7 @@ jobs:
       - name: Run checkpatch review
         uses: webispy/checkpatch-action@v9
       - name: Get some PR info
-        # this isn't used right now.
+        # this isn't used right now, maybe someday...
         run: |
           # echo "USER_EMAIL=$(git log -n 1 --pretty=format:%ae)" >> $GITHUB_ENV
           # temp override the aboe during testing
