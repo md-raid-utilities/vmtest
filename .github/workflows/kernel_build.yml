@@ -25,7 +25,7 @@ jobs:
           echo "Let's check the current user and which runner is execiting:"
           whoami
           ls run*
-          vagrant snapshot restore clean_vm_v41
+          vagrant snapshot restore clean_vm_fed40
           echo "FYI vagrant restore command finished with exit code: $?"
           sleep 2
           vagrant status
@@ -139,5 +139,3 @@ jobs:
           cd ..
           echo "Cleaning up..."
           # TODO: add testing cleanup
-          vagrant halt
-          echo "FYI vagrant halt command finished with exit code: $?"
