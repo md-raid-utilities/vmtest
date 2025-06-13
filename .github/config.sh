@@ -6,7 +6,7 @@ echo "Copy base .config"
 cp /boot/config-`uname -r`* .config
 
 echo "Make localmodconfig"
-n '' | make localmodconfig -j10
+Y '' | make localmodconfig -j10
 cp .config config.pre
 
 echo "Turn on CONFIG_MD_RAID0"
