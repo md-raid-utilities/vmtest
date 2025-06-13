@@ -57,6 +57,7 @@ jobs:
       - name: Run checkpatch review
         uses: webispy/checkpatch-action@v9
       - name: Get some PR info
+        # this isn't used right now.
         run: |
           # echo "USER_EMAIL=$(git log -n 1 --pretty=format:%ae)" >> $GITHUB_ENV
           # temp override the aboe during testing
@@ -72,17 +73,10 @@ jobs:
       - name: Configure kernel
         run: |
           cp .github/config.sh .
-          #cd .. replace after teset
           echo "********************************"
           echo "Prepare minimal kernel config..."
           echo "********************************"
-          vagrant status
-          vagrant up
-          echo "FYI vagrant up command finished with exit code: $?"
-          sleep 2
-          #vagrant ssh -c "cd ${{ env.REPO_DIR }} && ./config.sh"
           ./config.sh
-          echo "FYI vagrant config command finished with exit code: $?" 
       - name: Build kernel
         run: |
           echo "******************************"
