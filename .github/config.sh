@@ -1,6 +1,5 @@
 #!/bin/bash
 # SPDX-License-Identifier: BSD-3-Clause
-#
 
 echo "Configure Kernel..."
 printf '\r\n' | make localmodconfig -j$(nproc)
