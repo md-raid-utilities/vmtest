@@ -2,8 +2,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
+echo "Copy base .config"
+cp -f /boot/config-`uname -r`* .config
+
 echo "Configure Kernel..."
-printf '\r\n' | make localmodconfig -j$(nproc)
+printf '\r\n' | make oldconfig -j$(nproc)
 cp .config config.pre
 
 echo "Enable all RAID modules..."

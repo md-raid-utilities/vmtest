@@ -29,7 +29,6 @@ jobs:
           echo "FYI vagrant restore command finished with exit code: $?"
           sleep 2
           vagrant status
-          vagrant up
           sleep 2
           vagrant ssh -c "sudo timedatectl set-timezone UTC && \
             sudo chronyc -a makestep && sudo systemctl restart chronyd  && sleep 1"
@@ -71,10 +70,13 @@ jobs:
       - name: Configure kernel
         run: |
           cp .github/config.sh .
+          cd ..
           echo "********************************"
           echo "Prepare minimal kernel config..."
           echo "********************************"
-          ./config.sh
+          vagrant status
+          echo "FYI vagrant up command finished with exit code: $?"
+          vagrant ssh -c "cd ${{ env.REPO_DIR }} && ./config.sh"
       - name: Build kernel
         run: |
           echo "******************************"
@@ -91,8 +93,6 @@ jobs:
           echo "Install kernel in VM..."
           echo "***********************"
           vagrant status
-          vagrant up
-          echo "FYI vagrant up command finished with exit code: $?"
           sleep 2
           # remove old kernel index 0 so new build will always be used
           vagrant ssh -c "sudo grubby --remove-kernel=0" 
@@ -108,13 +108,8 @@ jobs:
           echo "Rebooting VM..."
           echo "***************"
           vagrant status
-          vagrant halt
-          echo "FYI vagrant halt command finished with exit code: $?"
-          sleep 2
-          vagrant status
-          sleep 2
-          vagrant up
-          echo "FYI vagrant up command finished with exit code: $?"
+          vagrant reload
+          echo "FYI vagrant reloadt command finished with exit code: $?"
           sleep 2
           vagrant status
           echo "kver=$(vagrant ssh -c 'uname -r')" >> $GITHUB_OUTPUT
@@ -129,6 +124,7 @@ jobs:
             echo "Version check passed!"
           else
             echo "Kernel install failed"
+            exit 1
           fi
           vagrant status
           echo "FYI vagrant up command finished with exit code: $?"
