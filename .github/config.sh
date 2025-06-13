@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 echo "Configure Kernel..."
-printf '\r\n' | make localmodconfig V1 -j$(nproc)
+printf '\r\n' | make localmodconfig V=1 -j$(nproc)
 cp .config config.pre
 
 echo "Enable all RAID modules..."
