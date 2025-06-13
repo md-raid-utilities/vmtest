@@ -25,8 +25,7 @@ jobs:
           echo "Let's check the current user and which runner is execiting:"
           whoami
           ls run*
-          vagrant snapshot restore clean_vm_v616
-          #vagrant snapshot restore clean_vm_v42
+          vagrant snapshot restore clean_vm_v41
           echo "FYI vagrant restore command finished with exit code: $?"
           sleep 2
           vagrant status
@@ -83,7 +82,7 @@ jobs:
           echo "******************************"
           echo "Current working directory:"
           pwd
-          make bzImage -j$(nproc)
+          printf '\r\n' | make bzImage -j$(nproc)
           make modules -j$(nproc)
       - name: Install kernel
         run: |

@@ -2,15 +2,11 @@
 # SPDX-License-Identifier: BSD-3-Clause
 #
 
-echo "Copy base .config"
-cp -f /boot/config-$(uname -r)* .config
-
-echo "Make oldconfig"
-printf '\r\n' | make oldconfig -j$(nproc)
+echo "Configure Kernel..."
+printf '\r\n' | make localmodconfig -j$(nproc)
 cp .config config.pre
 
 echo "Enable all RAID modules..."
-
 gawk '
 {
     if ($0 ~ /^(# )?CONFIG_MD_RAID[01456](=[ymn]| is not set)?$/) {
