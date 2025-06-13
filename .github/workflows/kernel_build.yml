@@ -25,9 +25,8 @@ jobs:
           echo "Let's check the current user and which runner is execiting:"
           whoami
           ls run*
-          # clean_vm_v1 is Fedora39
-          #vagrant snapshot restore clean_vm_v1
-          vagrant snapshot restore clean_vm_v42
+          vagrant snapshot restore clean_vm_v616
+          #vagrant snapshot restore clean_vm_v42
           echo "FYI vagrant restore command finished with exit code: $?"
           sleep 2
           vagrant status
@@ -84,8 +83,8 @@ jobs:
           echo "******************************"
           echo "Current working directory:"
           pwd
-          make bzImage -j20
-          make modules -j20
+          make bzImage -j$(nproc)
+          make modules -j$(nproc)
       - name: Install kernel
         run: |
           cd ..
@@ -99,8 +98,8 @@ jobs:
           # remove old kernel index 0 so new build will always be used
           vagrant ssh -c "sudo grubby --remove-kernel=0" 
           echo "FYI vagrant grubby command finished with exit code: $?" 
-          vagrant ssh -c "cd ${{ env.REPO_DIR }} && sudo make modules_install -j20 && \
-            sudo make install -j20 && sudo grubby --info ALL && exit"
+          vagrant ssh -c "cd ${{ env.REPO_DIR }} && sudo make modules_install -j$(nproc) && \
+            sudo make install -j$(nproc) && sudo grubby --info ALL && exit"
           echo "FYI vagrant make command finished with exit code: $?" 
       - name: Reboot VM
         id: kver2

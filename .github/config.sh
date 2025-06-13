@@ -3,26 +3,28 @@
 #
 
 echo "Copy base .config"
-cp /boot/config-`uname -r`* .config
+cp -f /boot/config-$(uname -r)* .config
 
-echo "Make localmodconfig"
-Y '' | make localmodconfig -j10
+echo "Make oldconfig"
+printf '\r\n' | make oldconfig -j$(nproc)
 cp .config config.pre
 
-echo "Turn on CONFIG_MD_RAID0"
-gawk '{gsub(/# CONFIG_MD_RAID0 is not set/, "CONFIG_MD_RAID0=y")} 1' .config > .config.tmp
-cp .config.tmp .config
+echo "Enable all RAID modules..."
 
-echo "Turn on CONFIG_MD_RAID1"
-gawk '{gsub(/# CONFIG_MD_RAID1 is not set/, "CONFIG_MD_RAID1=y")} 1' .config  > .config.tmp
-cp .config.tmp .config
+gawk '
+{
+    if ($0 ~ /^(# )?CONFIG_MD_RAID[01456](=[ymn]| is not set)?$/) {
+        next;
+    }
+    print $0;
+}
+END {
+    print "CONFIG_MD_RAID0=y";
+    print "CONFIG_MD_RAID1=y";
+    print "CONFIG_MD_RAID10=y";
+    print "CONFIG_MD_RAID456=y";
+}' .config > .config.tmp
 
-echo "Turn on CONFIG_MD_RAID10"
-gawk '{gsub(/# CONFIG_MD_RAID10 is not set/, "CONFIG_MD_RAID10=y")} 1' .config > .config.tmp
-cp .config.tmp .config
-
-echo "Turn on CONFIG_MD_RAID456"
-gawk '{gsub(/# CONFIG_MD_RAID456 is not set/, "CONFIG_MD_RAID456=y")} 1' .config > .config.tmp
 cp .config.tmp .config
 
 echo "Done updating .config!"
