@@ -65,7 +65,7 @@ def run_fio(raid_device):
     print("Running fio test...")
     fio_cmd = [
         'sudo', 'fio', '--name=raid-test', '--rw=readwrite', '--bs=4k',
-        '--runtime=10', '--verify=md5', '--numjobs=1', '--time_based',
+        '--runtime=10', '--verify=md5', '--numjobs=4', '--time_based',
         '--group_reporting', '--filename=' + raid_device
     ]
     print(fio_cmd)
