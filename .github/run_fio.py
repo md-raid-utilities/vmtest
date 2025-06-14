@@ -68,9 +68,9 @@ def run_fio(raid_device):
         '--runtime=10', '--verify=md5', '--numjobs=4', '--time_based',
         '--group_reporting', '--offset_increment=1G', '--filename=' + raid_device
     ]
-    print "*****"
+    print("*****")
     print(fio_cmd)
-    print "*****"
+    print("*****")
     try:
         process = subprocess.run(
             create_cmd,
