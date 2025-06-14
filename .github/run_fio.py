@@ -66,7 +66,7 @@ def run_fio(raid_device):
     fio_cmd = [
         'sudo', 'fio', '--name=raid-test', '--rw=readwrite', '--bs=4k',
         '--runtime=10', '--verify=md5', '--numjobs=4', '--time_based',
-        '--group_reporting', '--filename=' + raid_device
+        '--group_reporting', '--offset_increment=1G', '--filename=' + raid_device
     ]
     print(fio_cmd)
     subprocess.run(fio_cmd, check=True)
