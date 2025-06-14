@@ -68,14 +68,39 @@ def run_fio(raid_device):
         '--runtime=10', '--verify=md5', '--numjobs=4', '--time_based',
         '--group_reporting', '--offset_increment=1G', '--filename=' + raid_device
     ]
+    print "*****"
     print(fio_cmd)
-    subprocess.run(fio_cmd, check=True)
+    print "*****"
+    try:
+        process = subprocess.run(
+            create_cmd,
+            check=True,
+        )
+        print("STDOUT:", process.stdout)
+        print("STDERR:", process.stderr)
+        print(f"RAID{level_str} array '{raid_device}' created successfully.")
+        return
+    except subprocess.CalledProcessError as e:
+        print(f"Error with fio:")
+        print("STDOUT:", e.stdout)
+        print("STDERR:", e.stderr)
+        return
+    except FileNotFoundError:
+        print("Error: fio command not found. Make sure fio is installed.")
+        return
+#subprocess.run(fio_cmd, check=True)
 
 def clean_up(raid_device, drives):
     print("Cleaning up...")
+try:
     subprocess.run(['sudo', 'mdadm', '--stop', raid_device], check=True)
     subprocess.run(['sudo', 'mdadm', '--zero-superblock'] + drives, check=True)
-
+except:
+    print("Error Cleaning up")
+    print("STDOUT:", e.stdout)
+    print("STDERR:", e.stderr)
+    return
+    
 def main():
     try:
         drives = find_5gb_drives()
