@@ -131,9 +131,14 @@ jobs:
           sleep 2
           vagrant ssh -c "echo 'Reboot done, hello world!' && uname -r"
           echo "FYI vagrant reboot done command finished with exit code: $?" 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
       - name: Execute tests
         run: |
-          echo "Under construction..."
+          cp .github/run_fio.py .
+          python3 ./run_fio.py
       - name: All done, cleanup
         run: |          
           cd ..
