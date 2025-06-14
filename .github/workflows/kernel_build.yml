@@ -136,7 +136,7 @@ jobs:
           cp .github/run_fio.py .
           vagrant status
           sleep 2
-          vagrant ssh -c "sudo python3 ./run_fio.py"
+          vagrant ssh -c "cd ${{ env.REPO_DIR }} && sudo python3 ./run_fio.py"
           echo "FYI vagrant run_fio.py done command finished with exit code: $?" || \
           (echo "Error: vagrant run_fio.py command failed!" && exit 1)         
       - name: All done, cleanup
